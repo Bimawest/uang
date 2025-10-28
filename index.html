@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Manajemen Keuangan Sederhana</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f9;
+      padding: 20px;
+    }
+    .main {
+      width: 90%;
+      max-width: 500px;
+      margin: auto;
+      background-color: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    h1 {
+      color: #333;
+      text-align: center;
+    }
+    #money {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 15px;
+      box-sizing: border-box;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 16px;
+    }
+    .rincian {
+      margin-top: 20px;
+      padding: 10px;
+      border-top: 2px solid #eee;
+    }
+    .rincian p {
+      margin: 8px 0;
+      padding: 5px;
+      border-bottom: 1px dashed #f0f0f0;
+    }
+    .rincian .fixed-amount {
+        background-color: #e6f7ff; /* Warna latar belakang untuk alokasi tetap */
+        border-radius: 4px;
+    }
+    .rincian small {
+      color: #777;
+    }
+    .btn-container {
+      text-align: center;
+    }
+    #hitungButton {
+      background-color: #007bff;
+      color: white;
+      padding: 10px 15px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
+      transition: background-color 0.3s ease;
+      width: 100%;
+    }
+    #hitungButton:hover {
+      background-color: #0056b3;
+    }
+  </style>
+</head>
+<body>
+  <section class="main">
+    <h1>Manajemen Keuangan Sederhana 💸</h1>
+    <label for="money">Masukkan Jumlah Uang gaji(misalnya: 5000000):</label>
+    <input id="money" type="number" placeholder="masukkan jumlah" min="0">
+    
+    <div class="btn-container">
+      <button id="hitungButton">Tampilkan Rincian</button>
+    </div>
+    
+    <div class="rincian">
+      <h2>Rincian Keuangan</h2>
+      <p>Masukkan jumlah uang dan klik tombol untuk melihat alokasi.</p>
+    </div>
+  </section>
+  
+  <script>
+    // Dapatkan elemen-elemen DOM yang diperlukan
+    const moneyInput = document.getElementById('money');
+    const hitungButton = document.getElementById('hitungButton');
+    const rincianDiv = document.querySelector('.rincian');
+
+    // **ALOKASI TETAP**
+    const UANG_ORANG_TUA_FIXED = 1500000; // Rp 1.500.000 (tidak berubah)
+
+    // **ALOKASI PERSENTASE**
+    // Total persentase ini harus 100% dari SISA UANG
+    const alokasiPersen = {
+      'Uang Nabung 💰': 30,    // Naik menjadi 30%
+      'Uang Makan 🍽️': 35,     // Naik menjadi 35%
+      'Uang Pegangan ✋': 25,   // Naik menjadi 25% (kebutuhan lain-lain)
+      'Uang Nongkrong ☕': 7,
+      'Uang Rokok 🚬': 3,
+    };
+
+    // Fungsi untuk memformat angka menjadi format Rupiah (Rp)
+    const formatRupiah = (angka) => {
+      if (isNaN(angka)) return 'Rp 0';
+      return new Intl.NumberFormat('id-ID', {
+        style: 'currency',
+        currency: 'IDR',
+        minimumFractionDigits: 0
+      }).format(angka);
+    };
+
+    // Fungsi utama untuk menghitung dan menampilkan rincian
+    const tampilkanRincian = () => {
+      // 1. Dapatkan total uang
+      const totalUang = parseFloat(moneyInput.value);
+
+      // Cek validasi
+      if (isNaN(totalUang) || totalUang < UANG_ORANG_TUA_FIXED) {
+        rincianDiv.innerHTML = `
+          <h2>Rincian Keuangan</h2>
+          <p style="color: red;">⚠️ Mohon masukkan jumlah uang yang valid (angka positif) dan minimal ${formatRupiah(UANG_ORANG_TUA_FIXED)} untuk alokasi orang tua.</p>
+        `;
+        return;
+      }
+
+      // 2. Hitung Sisa Uang setelah alokasi fixed
+      const sisaUang = totalUang - UANG_ORANG_TUA_FIXED;
+
+      // 3. Mulai membuat konten HTML
+      let rincianHTML = `<h2>Rincian Keuangan</h2>`;
+      rincianHTML += `<hr>`;
+
+      // **Tambahkan Alokasi Fixed (Uang Orang Tua)**
+      rincianHTML += `
+        <p class="fixed-amount">
+          <strong>Uang Orang Tua 👨‍👩‍👧‍👦 (Alokasi Tetap):</strong> 
+          ${formatRupiah(UANG_ORANG_TUA_FIXED)} 
+        </p>
+      `;
+      rincianHTML += `
+        <p>
+          <strong>Sisa Uang yang Dialokasikan:</strong> 
+          ${formatRupiah(sisaUang)} 
+        </p>
+        <hr>
+      `;
+
+
+      // **Tambahkan Alokasi Persentase (dari Sisa Uang)**
+      for (const [kategori, persen] of Object.entries(alokasiPersen)) {
+        // Hitung jumlah uang berdasarkan persentase dari SISA UANG
+        const jumlahUang = (sisaUang * persen) / 100;
+        
+        // Tambahkan detail kategori ke HTML
+        rincianHTML += `
+          <p>
+            <strong>${kategori}:</strong> 
+            ${formatRupiah(jumlahUang)} 
+            <small>(${persen}% dari Sisa)</small>
+          </p>
+        `;
+      }
+
+      // Tampilkan hasil
+      rincianDiv.innerHTML = rincianHTML;
+    };
+
+    // Event Listener untuk tombol
+    hitungButton.addEventListener('click', tampilkanRincian);
+
+    // Event Listener untuk Enter di input
+    moneyInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        tampilkanRincian();
+      }
+    });
+
+    // Panggil fungsi sekali saat memuat untuk menampilkan pesan awal
+    tampilkanRincian();
+  </script>
+</body>
+</html>
